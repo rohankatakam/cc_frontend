@@ -69,12 +69,14 @@ export default function PaymentDetails({ payment }: PaymentDetailsProps) {
               copyable
               field="payment_id"
             />
-            <DetailRow
-              label="Quote ID"
-              value={payment.quote_id}
-              copyable
-              field="quote_id"
-            />
+            {payment.quote_id && (
+              <DetailRow
+                label="Quote ID"
+                value={payment.quote_id}
+                copyable
+                field="quote_id"
+              />
+            )}
             <DetailRow
               label="Amount"
               value={formatCurrency(payment.amount, payment.currency)}
