@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Quote, QuoteRequest } from '@/lib/types';
 import { createQuote } from '@/lib/api';
-import { formatCurrency, parseCurrencyToCents } from '@/lib/utils';
+import { parseCurrencyToCents } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'BRL'];

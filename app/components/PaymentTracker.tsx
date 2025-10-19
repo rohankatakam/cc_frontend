@@ -20,6 +20,7 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
   const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
+    // eslint-disable-next-line prefer-const
     let interval: NodeJS.Timeout;
 
     const fetchPayment = async () => {
