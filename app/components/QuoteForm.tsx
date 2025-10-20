@@ -77,7 +77,7 @@ export default function QuoteForm({ onQuoteCreated }: QuoteFormProps) {
       }
       setError(null);
       setShowAIAnalysis(true);
-    } catch (err) {
+    } catch {
       setError('Invalid amount format');
     }
   };

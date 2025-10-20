@@ -65,6 +65,7 @@ export default function AIFeeAnalysis({
     if (open && !analysis && !loading) {
       handleAnalyze();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return (
