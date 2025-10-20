@@ -169,7 +169,7 @@ export default function QuoteForm({ onQuoteCreated }: QuoteFormProps) {
         toCurrency={toCurrency}
         open={showAIAnalysis}
         onOpenChange={setShowAIAnalysis}
-        standardFees={currentQuote?.total_fee_cents ? currentQuote.total_fee_cents / 100 : undefined}
+        standardFees={currentQuote?.fees?.total_fees ? currentQuote.fees.total_fees / 100 : undefined}
         onUseAnalysis={(analysis) => {
           console.log('Applying AI-optimized routing:', analysis);
           // TODO: In production, this would apply the AI recommendations
