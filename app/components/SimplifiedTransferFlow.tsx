@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowDown, Clock, Shield, Info, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { createQuote, createPayment, calculateFees } from '@/lib/api';
+import { createQuote, createPayment, calculateFees, storePaymentId } from '@/lib/api';
 import type { FeeCalculationResponse } from '@/lib/types';
 
 interface SimplifiedTransferFlowProps {
@@ -94,7 +94,10 @@ export default function SimplifiedTransferFlow({
         idempotencyKey
       );
 
-      // 3. Navigate to tracking
+      // 3. Store payment ID in localStorage for history
+      storePaymentId(payment.payment_id);
+
+      // 4. Navigate to tracking
       onTransferComplete(payment.payment_id);
     } catch (err: unknown) {
       console.error('Transfer failed:', err);

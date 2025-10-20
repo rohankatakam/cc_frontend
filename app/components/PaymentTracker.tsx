@@ -11,13 +11,14 @@ import { Loader2 } from 'lucide-react';
 
 interface PaymentTrackerProps {
   paymentId: string;
+  compact?: boolean;
 }
 
-export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
+export default function PaymentTracker({ paymentId, compact = false }: PaymentTrackerProps) {
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pollCount, setPollCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
     // eslint-disable-next-line prefer-const
@@ -28,7 +29,7 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
         const data = await getPayment(paymentId);
         setPayment(data);
         setError(null);
-        setPollCount((prev) => prev + 1);
+        setLastUpdated(new Date());
 
         // Stop polling if payment is completed or failed
         if (data.status === 'COMPLETED' || data.status === 'FAILED') {
@@ -57,9 +58,9 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Loading payment...</span>
+        <CardContent className={compact ? "flex items-center justify-center p-4" : "flex items-center justify-center p-8"}>
+          <Loader2 className={compact ? "h-5 w-5 animate-spin text-muted-foreground" : "h-8 w-8 animate-spin text-muted-foreground"} />
+          <span className={compact ? "ml-2 text-sm text-muted-foreground" : "ml-2 text-muted-foreground"}>Loading...</span>
         </CardContent>
       </Card>
     );
@@ -68,7 +69,7 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription className={compact ? "text-sm" : ""}>{error}</AlertDescription>
       </Alert>
     );
   }
@@ -77,6 +78,31 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
     return null;
   }
 
+  // Compact view for multi-payment grid
+  if (compact) {
+    return (
+      <Card className="h-full hover:shadow-lg transition-shadow">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-mono">
+            {payment.payment_id.substring(0, 8)}...
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <StateVisualization payment={payment} compact />
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-gray-900">
+              {payment.currency} {(payment.amount / 100).toFixed(2)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Updated {new Date().toLocaleTimeString()}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full view for single payment tracking
   return (
     <div className="space-y-6">
       {/* State Machine Visualization */}
@@ -85,7 +111,7 @@ export default function PaymentTracker({ paymentId }: PaymentTrackerProps) {
           <div className="flex items-center justify-between">
             <CardTitle>Payment Progress</CardTitle>
             <div className="text-sm text-muted-foreground">
-              Poll count: {pollCount}
+              Last updated: {lastUpdated.toLocaleTimeString()}
             </div>
           </div>
         </CardHeader>

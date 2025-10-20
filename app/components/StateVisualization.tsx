@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface StateVisualizationProps {
   payment: Payment;
+  compact?: boolean;
 }
 
 const STATES: PaymentStatus[] = [
@@ -25,29 +26,31 @@ const STATE_LABELS: Record<PaymentStatus, string> = {
   FAILED: 'Failed',
 };
 
-export default function StateVisualization({ payment }: StateVisualizationProps) {
+export default function StateVisualization({ payment, compact = false }: StateVisualizationProps) {
   // Map ONRAMP_COMPLETE to OFFRAMP_PENDING for simplified UI (backend still uses 5 states)
   const displayStatus = payment.status === 'ONRAMP_COMPLETE' ? 'OFFRAMP_PENDING' : payment.status;
   const currentStateIndex = STATES.indexOf(displayStatus);
   const isFailed = payment.status === 'FAILED';
 
+  const iconSize = compact ? 'h-5 w-5' : 'h-8 w-8';
+
   const getStateIcon = (state: PaymentStatus, index: number) => {
     if (isFailed && state === payment.status) {
-      return <XCircle className="h-8 w-8 text-red-500" />;
+      return <XCircle className={`${iconSize} text-red-500`} />;
     }
 
     if (index < currentStateIndex) {
       // Completed state
-      return <CheckCircle2 className="h-8 w-8 text-green-500" />;
+      return <CheckCircle2 className={`${iconSize} text-green-500`} />;
     } else if (index === currentStateIndex) {
       // Current state - show checkmark if COMPLETED, otherwise loading
       if (payment.status === 'COMPLETED') {
-        return <CheckCircle2 className="h-8 w-8 text-green-500" />;
+        return <CheckCircle2 className={`${iconSize} text-green-500`} />;
       }
-      return <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />;
+      return <Loader2 className={`${iconSize} text-blue-500 animate-spin`} />;
     } else {
       // Pending state
-      return <Circle className="h-8 w-8 text-gray-300" />;
+      return <Circle className={`${iconSize} text-gray-300`} />;
     }
   };
 
@@ -76,6 +79,46 @@ export default function StateVisualization({ payment }: StateVisualizationProps)
     return null;
   };
 
+  // Compact view - just show progress bar with current status
+  if (compact) {
+    const progress = isFailed ? 0 : ((currentStateIndex + 1) / STATES.length) * 100;
+
+    return (
+      <div className="w-full space-y-2">
+        {/* Progress bar */}
+        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className={cn(
+              'absolute top-0 left-0 h-full transition-all duration-500',
+              isFailed ? 'bg-red-500' : payment.status === 'COMPLETED' ? 'bg-green-500' : 'bg-blue-500'
+            )}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Status badge */}
+        <div className="flex items-center justify-between">
+          <Badge
+            variant={
+              isFailed
+                ? 'destructive'
+                : payment.status === 'COMPLETED'
+                ? 'default'
+                : 'secondary'
+            }
+            className="text-xs"
+          >
+            {STATE_LABELS[displayStatus]}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {currentStateIndex + 1}/{STATES.length}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Full view - show complete state diagram
   return (
     <div className="w-full">
       {/* State Flow Diagram */}
