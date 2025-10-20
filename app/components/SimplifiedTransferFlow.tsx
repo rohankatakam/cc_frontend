@@ -127,8 +127,7 @@ export default function SimplifiedTransferFlow({
                   placeholder="1,000.00"
                   className="flex-1 text-3xl md:text-4xl font-bold outline-none border-0 p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 text-lg font-semibold">
-                  <span className="text-2xl">🇺🇸</span>
+                <div className="flex items-center gap-2 text-lg font-semibold text-gray-700">
                   <span>USD</span>
                 </div>
               </div>
@@ -182,8 +181,7 @@ export default function SimplifiedTransferFlow({
                     <div className="h-12 md:h-14 bg-green-200 rounded-lg animate-pulse w-48"></div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-lg font-semibold">
-                  <span className="text-2xl">🇪🇺</span>
+                <div className="flex items-center gap-2 text-lg font-semibold text-green-800">
                   <span>EUR</span>
                 </div>
               </div>

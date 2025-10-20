@@ -54,24 +54,6 @@ export default function PaymentTable({ paymentIds, onSelectPayment, onNewTransfe
     }
   };
 
-  const getStatusEmoji = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return '⏳';
-      case 'ONRAMP_PENDING':
-        return '🔄';
-      case 'ONRAMP_COMPLETE':
-        return '✅';
-      case 'OFFRAMP_PENDING':
-        return '🔄';
-      case 'COMPLETED':
-        return '✅';
-      case 'FAILED':
-        return '❌';
-      default:
-        return '⏳';
-    }
-  };
 
   const getProgressPercentage = (status: string) => {
     const statusMap: Record<string, number> = {
@@ -165,7 +147,7 @@ export default function PaymentTable({ paymentIds, onSelectPayment, onNewTransfe
                     {/* Status */}
                     <td className="py-4 px-4">
                       <Badge variant={getStatusBadgeVariant(payment.status)}>
-                        {getStatusEmoji(payment.status)} {payment.status.replace('_', ' ')}
+                        {payment.status.replace('_', ' ')}
                       </Badge>
                     </td>
 
