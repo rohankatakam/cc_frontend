@@ -1,122 +1,185 @@
 'use client';
 
 import { useState } from 'react';
-import { Quote } from '@/lib/types';
-import QuoteForm from './components/QuoteForm';
-import QuoteDisplay from './components/QuoteDisplay';
-import PaymentForm from './components/PaymentForm';
+import SimplifiedTransferFlow from './components/SimplifiedTransferFlow';
 import PaymentTracker from './components/PaymentTracker';
 import PaymentHistory from './components/PaymentHistory';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function Home() {
-  const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [currentPaymentId, setCurrentPaymentId] = useState<string | null>(null);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  const handleQuoteCreated = (quote: Quote) => {
-    setCurrentQuote(quote);
-    setShowPaymentForm(true);
-    setCurrentPaymentId(null);
-  };
+  // When tracking a payment
+  if (currentPaymentId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              PayFlow
+            </h1>
+            <button
+              onClick={() => setCurrentPaymentId(null)}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              ← New transfer
+            </button>
+          </div>
+        </header>
 
-  const handleQuoteExpired = () => {
-    setCurrentQuote(null);
-    setShowPaymentForm(false);
-  };
+        <main className="container mx-auto px-4 py-8">
+          <PaymentTracker paymentId={currentPaymentId} />
+        </main>
+      </div>
+    );
+  }
 
-  const handlePaymentCreated = (paymentId: string) => {
-    setCurrentPaymentId(paymentId);
-    setShowPaymentForm(false);
-  };
-
-  const handleSelectPayment = (paymentId: string) => {
-    setCurrentPaymentId(paymentId);
-    setCurrentQuote(null);
-    setShowPaymentForm(false);
-  };
-
-  const handleNewQuote = () => {
-    setCurrentQuote(null);
-    setCurrentPaymentId(null);
-    setShowPaymentForm(false);
-  };
-
+  // Main transfer page
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Clean header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Crypto Payment Dashboard</h1>
-              <p className="text-muted-foreground mt-1">
-                Real-time payment processing with guaranteed exchange rates
-              </p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                PayFlow
+              </h1>
+              <p className="text-sm text-gray-600">Send money globally, instantly</p>
             </div>
-            {(currentQuote || currentPaymentId) && (
-              <button
-                onClick={handleNewQuote}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                + New Quote
-              </button>
-            )}
+            <button
+              onClick={() => setShowHistory(true)}
+              className="text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
+              History
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Quote and Payment Forms */}
-          <div className="lg:col-span-1 space-y-6">
-            {!currentPaymentId && (
-              <>
-                <QuoteForm onQuoteCreated={handleQuoteCreated} />
-
-                {currentQuote && (
-                  <QuoteDisplay quote={currentQuote} onExpired={handleQuoteExpired} />
-                )}
-
-                {currentQuote && showPaymentForm && (
-                  <PaymentForm
-                    quote={currentQuote}
-                    onPaymentCreated={handlePaymentCreated}
-                  />
-                )}
-              </>
-            )}
-
-            <PaymentHistory onSelectPayment={handleSelectPayment} />
+      {/* Main content - centered, prominent */}
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Value proposition */}
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Send money anywhere, instantly
+            </h2>
+            <p className="text-lg text-gray-600">
+              90% cheaper than banks • Arrives in minutes • AI-optimized routing
+            </p>
           </div>
 
-          {/* Right Column - Payment Tracker */}
-          <div className="lg:col-span-2">
-            {currentPaymentId ? (
-              <PaymentTracker paymentId={currentPaymentId} />
-            ) : (
-              <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg">
-                <div className="text-center text-muted-foreground">
-                  <p className="text-lg font-medium mb-2">No Active Payment</p>
-                  <p className="text-sm">
-                    Create a quote and submit a payment to see real-time tracking
-                  </p>
-                </div>
-              </div>
-            )}
+          {/* Main transfer card */}
+          <SimplifiedTransferFlow
+            onTransferComplete={(paymentId) => setCurrentPaymentId(paymentId)}
+          />
+
+          {/* Trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔒</span>
+              <span>Bank-level security</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
+              <span>Instant settlement</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🌍</span>
+              <span>Global coverage</span>
+            </div>
+          </div>
+
+          {/* Comparison section */}
+          <div className="mt-16 pt-16 border-t">
+            <h3 className="text-2xl font-bold text-center mb-8 text-gray-900">
+              Why PayFlow?
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <ComparisonCard
+                icon="💰"
+                label="Cost"
+                traditional="$45 (4.5%)"
+                payflow="$12 (1.2%)"
+                savings="73% cheaper"
+              />
+              <ComparisonCard
+                icon="⚡"
+                label="Speed"
+                traditional="3-5 days"
+                payflow="3-5 minutes"
+                savings="99.9% faster"
+              />
+              <ComparisonCard
+                icon="📊"
+                label="Transparency"
+                traditional="Hidden fees"
+                payflow="Full breakdown"
+                savings="100% clear"
+              />
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t mt-12">
+      {/* Footer - minimal */}
+      <footer className="border-t mt-16">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <p>Powered by AWS Lambda, DynamoDB, and SQS</p>
-            <p>API: {process.env.NEXT_PUBLIC_API_URL}</p>
-          </div>
+          <p className="text-center text-sm text-gray-500">
+            © 2025 PayFlow • Powered by stablecoin rails
+          </p>
         </div>
       </footer>
+
+      {/* History Modal */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Transaction History</DialogTitle>
+          </DialogHeader>
+          <PaymentHistory onSelectPayment={(paymentId) => {
+            setCurrentPaymentId(paymentId);
+            setShowHistory(false);
+          }} />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Comparison Card Component
+function ComparisonCard({
+  icon,
+  label,
+  traditional,
+  payflow,
+  savings,
+}: {
+  icon: string;
+  label: string;
+  traditional: string;
+  payflow: string;
+  savings: string;
+}) {
+  return (
+    <div className="p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+      <div className="text-3xl mb-4 text-center">{icon}</div>
+      <h4 className="font-semibold text-gray-900 text-center mb-4">{label}</h4>
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-gray-500">Traditional:</span>
+          <span className="text-gray-700 font-medium">{traditional}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-gray-500">PayFlow:</span>
+          <span className="text-green-700 font-semibold">{payflow}</span>
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t text-center">
+        <span className="text-sm font-bold text-green-600">{savings}</span>
+      </div>
     </div>
   );
 }

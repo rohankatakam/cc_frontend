@@ -104,7 +104,8 @@ export interface FeeBreakdown {
   platform_fee: number;
   onramp_fee: number;
   offramp_fee: number;
-  volatility_premium: number;
+  volatility_premium?: number;
+  gas_cost?: number;
   risk_premium?: number;
 }
 

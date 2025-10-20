@@ -181,12 +181,14 @@ export default function AIFeeAnalysis({
                   amount={analysis.fee_breakdown.offramp_fee}
                   currency={fromCurrency}
                 />
-                <FeeItem
-                  label="Volatility Premium"
-                  amount={analysis.fee_breakdown.volatility_premium}
-                  currency={fromCurrency}
-                  highlight
-                />
+                {analysis.fee_breakdown.volatility_premium !== undefined && (
+                  <FeeItem
+                    label="Volatility Premium"
+                    amount={analysis.fee_breakdown.volatility_premium}
+                    currency={fromCurrency}
+                    highlight
+                  />
+                )}
                 {analysis.fee_breakdown.risk_premium && analysis.fee_breakdown.risk_premium > 0 && (
                   <FeeItem
                     label="Risk Premium"
