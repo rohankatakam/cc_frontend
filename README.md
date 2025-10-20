@@ -2,6 +2,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Prerequisites
+
+1. Copy the environment variables file:
+```bash
+cp .env.example .env.local
+```
+
+2. Update `.env.local` with your API Gateway endpoint:
+```env
+NEXT_PUBLIC_API_URL=https://YOUR-API-ID.execute-api.YOUR-REGION.amazonaws.com/dev
+```
+
+You can get the API Gateway URL from the backend terraform output or AWS Console.
+
+### Development Server
+
 First, run the development server:
 
 ```bash
