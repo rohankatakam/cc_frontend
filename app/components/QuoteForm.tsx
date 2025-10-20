@@ -10,7 +10,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Quote, QuoteRequest } from '@/lib/types';
 import { createQuote } from '@/lib/api';
 import { parseCurrencyToCents } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
+import AIFeeAnalysis from './AIFeeAnalysis';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'BRL'];
 
@@ -24,6 +25,8 @@ export default function QuoteForm({ onQuoteCreated }: QuoteFormProps) {
   const [amountInput, setAmountInput] = useState('1000.00');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +51,7 @@ export default function QuoteForm({ onQuoteCreated }: QuoteFormProps) {
       };
 
       const quote = await createQuote(request);
+      setCurrentQuote(quote);
       onQuoteCreated(quote);
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'message' in err) {
@@ -60,73 +64,119 @@ export default function QuoteForm({ onQuoteCreated }: QuoteFormProps) {
     }
   };
 
+  const handleAIAnalysis = () => {
+    try {
+      const amountInCents = parseCurrencyToCents(amountInput);
+      if (amountInCents <= 0) {
+        setError('Amount must be greater than 0');
+        return;
+      }
+      if (fromCurrency === toCurrency) {
+        setError('From and To currencies must be different');
+        return;
+      }
+      setError(null);
+      setShowAIAnalysis(true);
+    } catch (err) {
+      setError('Invalid amount format');
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create Quote</CardTitle>
-        <CardDescription>
-          Lock in an exchange rate for 60 seconds with guaranteed payout
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="from-currency">From Currency</Label>
-              <Select value={fromCurrency} onValueChange={setFromCurrency}>
-                <SelectTrigger id="from-currency">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Create Quote</CardTitle>
+          <CardDescription>
+            Lock in an exchange rate for 60 seconds with guaranteed payout
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="from-currency">From Currency</Label>
+                <Select value={fromCurrency} onValueChange={setFromCurrency}>
+                  <SelectTrigger id="from-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="to-currency">To Currency</Label>
+                <Select value={toCurrency} onValueChange={setToCurrency}>
+                  <SelectTrigger id="to-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="to-currency">To Currency</Label>
-              <Select value={toCurrency} onValueChange={setToCurrency}>
-                <SelectTrigger id="to-currency">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="amount">Amount ({fromCurrency})</Label>
+              <Input
+                id="amount"
+                type="text"
+                placeholder="1000.00"
+                value={amountInput}
+                onChange={(e) => setAmountInput(e.target.value)}
+              />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount ({fromCurrency})</Label>
-            <Input
-              id="amount"
-              type="text"
-              placeholder="1000.00"
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-            />
-          </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAIAnalysis}
+                className="w-full"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Analyze with AI
+              </Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Get Quote
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Get Quote
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <AIFeeAnalysis
+        amount={parseCurrencyToCents(amountInput) || 100000}
+        fromCurrency={fromCurrency}
+        toCurrency={toCurrency}
+        open={showAIAnalysis}
+        onOpenChange={setShowAIAnalysis}
+        standardFees={currentQuote?.total_fee_cents ? currentQuote.total_fee_cents / 100 : undefined}
+        onUseAnalysis={(analysis) => {
+          console.log('Applying AI-optimized routing:', analysis);
+          // TODO: In production, this would apply the AI recommendations
+          // For now, we'll just show a success message
+          setError(null);
+        }}
+      />
+    </>
   );
 }
