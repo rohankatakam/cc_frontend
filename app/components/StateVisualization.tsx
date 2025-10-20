@@ -12,22 +12,23 @@ interface StateVisualizationProps {
 const STATES: PaymentStatus[] = [
   'PENDING',
   'ONRAMP_PENDING',
-  'ONRAMP_COMPLETE',
   'OFFRAMP_PENDING',
   'COMPLETED',
 ];
 
 const STATE_LABELS: Record<PaymentStatus, string> = {
-  PENDING: 'Pending',
-  ONRAMP_PENDING: 'On-ramp Processing',
-  ONRAMP_COMPLETE: 'On-ramp Complete',
-  OFFRAMP_PENDING: 'Off-ramp Processing',
+  PENDING: 'Initiated',
+  ONRAMP_PENDING: 'Converting USD → USDC',
+  ONRAMP_COMPLETE: 'On-ramp Complete', // Keep for backend compatibility
+  OFFRAMP_PENDING: 'Converting USDC → EUR',
   COMPLETED: 'Completed',
   FAILED: 'Failed',
 };
 
 export default function StateVisualization({ payment }: StateVisualizationProps) {
-  const currentStateIndex = STATES.indexOf(payment.status);
+  // Map ONRAMP_COMPLETE to OFFRAMP_PENDING for simplified UI (backend still uses 5 states)
+  const displayStatus = payment.status === 'ONRAMP_COMPLETE' ? 'OFFRAMP_PENDING' : payment.status;
+  const currentStateIndex = STATES.indexOf(displayStatus);
   const isFailed = payment.status === 'FAILED';
 
   const getStateIcon = (state: PaymentStatus, index: number) => {
@@ -126,7 +127,7 @@ export default function StateVisualization({ payment }: StateVisualizationProps)
           }
           className="text-sm px-4 py-2"
         >
-          Current Status: {STATE_LABELS[payment.status]}
+          Current Status: {STATE_LABELS[displayStatus]}
         </Badge>
       </div>
     </div>

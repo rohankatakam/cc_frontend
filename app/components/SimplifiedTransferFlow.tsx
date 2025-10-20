@@ -55,8 +55,8 @@ export default function SimplifiedTransferFlow({
     }
   }, [sendAmount]);
 
-  // Calculate recipient amount (only if not currently loading to prevent negative values)
-  const recipientAmount = aiOptimization && !optimizationLoading
+  // Calculate recipient amount (always use latest optimization data, don't hide during loading)
+  const recipientAmount = aiOptimization
     ? calculateRecipientAmount(parseCurrencyToCents(sendAmount), aiOptimization)
     : null;
 
@@ -165,23 +165,18 @@ export default function SimplifiedTransferFlow({
             <div className="relative">
               <div className="flex items-center gap-3 p-4 md:p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
                 <div className="flex-1">
-                  {recipientAmount !== null && aiOptimization ? (
+                  {recipientAmount !== null ? (
                     <motion.div
                       key={recipientAmount}
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-4xl md:text-5xl font-bold text-green-700"
+                      className={`text-4xl md:text-5xl font-bold ${optimizationLoading ? 'text-green-600 opacity-70' : 'text-green-700'}`}
                     >
                       {(recipientAmount / 100).toFixed(2)}
                     </motion.div>
                   ) : (
-                    <div className="text-4xl md:text-5xl font-bold text-gray-300">
-                      {optimizationLoading ? (
-                        <Loader2 className="h-12 w-12 animate-spin inline-block" />
-                      ) : (
-                        '0.00'
-                      )}
-                    </div>
+                    // Skeleton loader for recipient amount
+                    <div className="h-12 md:h-14 bg-green-200 rounded-lg animate-pulse w-48"></div>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-lg font-semibold">
@@ -200,49 +195,77 @@ export default function SimplifiedTransferFlow({
           </div>
 
           {/* Section 3: Fee breakdown (collapsible) */}
-          <details className="group cursor-pointer">
-            <summary className="flex items-center justify-between text-sm text-gray-600 hover:text-gray-900 transition-colors list-none">
-              <span className="flex items-center gap-2">
-                {optimizationLoading && aiOptimization && (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
-                )}
-                {aiOptimization ? (
-                  <>
-                    Platform fee ${(aiOptimization.fee_breakdown.platform_fee / 100).toFixed(2)} •{' '}
-                    Route fee ${((aiOptimization.fee_breakdown.onramp_fee + aiOptimization.fee_breakdown.offramp_fee) / 100).toFixed(2)} •{' '}
-                    <span className="font-semibold text-gray-900">
-                      Total ${(aiOptimization.total_fee / 100).toFixed(2)}
+          {!aiOptimization ? (
+            // Skeleton loader for fees
+            <div className="space-y-2">
+              <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4"></div>
+              <div className="h-3 bg-gray-100 rounded animate-pulse w-1/2"></div>
+            </div>
+          ) : (
+            <details className="group cursor-pointer">
+              <summary className="flex items-center justify-between text-sm text-gray-600 hover:text-gray-900 transition-colors list-none">
+                <span className="flex items-center gap-2">
+                  {optimizationLoading ? (
+                    // Skeleton loaders for fee values during recalculation
+                    <span className="flex items-center gap-2">
+                      <span>Platform fee</span>
+                      <span className="inline-block h-4 w-12 bg-gray-300 rounded animate-pulse"></span>
+                      <span>•</span>
+                      <span>Route fee</span>
+                      <span className="inline-block h-4 w-12 bg-gray-300 rounded animate-pulse"></span>
+                      <span>•</span>
+                      <span className="font-semibold">Total</span>
+                      <span className="inline-block h-4 w-12 bg-gray-400 rounded animate-pulse"></span>
                     </span>
-                  </>
-                ) : (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
-                    Calculating fees...
-                  </>
-                )}
-              </span>
-              <svg
-                className="h-4 w-4 transition-transform group-open:rotate-180"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
+                  ) : (
+                    <span>
+                      Platform fee ${(aiOptimization.fee_breakdown.platform_fee / 100).toFixed(2)} •{' '}
+                      Route fee ${((aiOptimization.fee_breakdown.onramp_fee + aiOptimization.fee_breakdown.offramp_fee) / 100).toFixed(2)} •{' '}
+                      <span className="font-semibold text-gray-900">
+                        Total ${(aiOptimization.total_fee / 100).toFixed(2)}
+                      </span>
+                    </span>
+                  )}
+                </span>
+                <svg
+                  className="h-4 w-4 transition-transform group-open:rotate-180"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
 
-            {aiOptimization && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 className="mt-3 p-4 bg-gray-50 rounded-lg space-y-2 relative"
               >
-                {/* Loading overlay */}
+                {/* Skeleton overlay during recalculation */}
                 {optimizationLoading && (
-                  <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-[2px] rounded-lg flex items-center justify-center z-10">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Updating fees...</span>
+                  <div className="absolute inset-0 bg-gray-50/95 rounded-lg p-4 z-10 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-24"></div>
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-16"></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-32"></div>
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-16"></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-28"></div>
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-16"></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-20"></div>
+                      <div className="h-4 bg-gray-300 rounded animate-pulse w-12"></div>
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-gray-300">
+                      <div className="flex justify-between items-center">
+                        <div className="h-4 bg-gray-400 rounded animate-pulse w-20"></div>
+                        <div className="h-4 bg-gray-400 rounded animate-pulse w-16"></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -271,24 +294,45 @@ export default function SimplifiedTransferFlow({
                     amount={aiOptimization.total_fee}
                     bold
                   />
-                  <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                    {aiOptimization.fee_explanation}
-                  </p>
+                  {optimizationLoading ? (
+                    <div className="mt-2 space-y-1">
+                      <div className="h-3 bg-gray-300 rounded animate-pulse w-full"></div>
+                      <div className="h-3 bg-gray-300 rounded animate-pulse w-5/6"></div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                      {aiOptimization.fee_explanation}
+                    </p>
+                  )}
                 </div>
               </motion.div>
-            )}
-          </details>
+            </details>
+          )}
 
           {/* Section 4: Delivery estimate */}
-          <div className="flex items-center gap-2 text-sm text-gray-600 p-3 bg-blue-50 rounded-lg">
-            <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
-            <span>
-              Should arrive in{' '}
-              <span className="font-semibold text-blue-900">
-                {aiOptimization?.estimated_settlement_time || '3-5 minutes'}
-              </span>
-            </span>
-          </div>
+          {!aiOptimization ? (
+            // Skeleton loader for delivery time
+            <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+              <Clock className="h-4 w-4 text-blue-300 flex-shrink-0" />
+              <div className="h-4 bg-blue-200 rounded animate-pulse w-48"></div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-gray-600 p-3 bg-blue-50 rounded-lg">
+              <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              {optimizationLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 bg-blue-200 rounded animate-pulse w-44"></div>
+                </div>
+              ) : (
+                <span>
+                  Should arrive in{' '}
+                  <span className="font-semibold text-blue-900">
+                    {aiOptimization.estimated_settlement_time}
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Error message */}
           {error && (
@@ -380,9 +424,16 @@ function parseCurrencyToCents(amount: string): number {
   return Math.round(parsed * 100);
 }
 
-function calculateRecipientAmount(amountCents: number, optimization: FeeCalculationResponse): number {
+function calculateRecipientAmount(amountCents: number, optimization: FeeCalculationResponse): number | null {
   // Subtract fees, apply exchange rate (using fixed rate for now)
   const amountAfterFees = amountCents - optimization.total_fee;
+
+  // Protect against negative values (can happen when using stale fee data with new amount)
+  // Return null to trigger skeleton loader instead of showing negative or zero
+  if (amountAfterFees < 0) {
+    return null;
+  }
+
   const exchangeRate = 0.858; // USD to EUR
   const recipientAmount = amountAfterFees * exchangeRate;
   return Math.round(recipientAmount);
