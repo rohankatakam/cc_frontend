@@ -71,6 +71,7 @@ export default function Home() {
               <DialogTitle>New Transfer</DialogTitle>
             </DialogHeader>
             <SimplifiedTransferFlow
+              inModal={true}
               onTransferComplete={(paymentId) => {
                 setShowNewTransferModal(false);
                 setSelectedPaymentId(paymentId);

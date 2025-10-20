@@ -11,10 +11,12 @@ import type { FeeCalculationResponse } from '@/lib/types';
 
 interface SimplifiedTransferFlowProps {
   onTransferComplete: (paymentId: string) => void;
+  inModal?: boolean;
 }
 
 export default function SimplifiedTransferFlow({
-  onTransferComplete
+  onTransferComplete,
+  inModal = false
 }: SimplifiedTransferFlowProps) {
   // State - Fixed to USD → EUR
   const [sendAmount, setSendAmount] = useState('1000.00');
@@ -108,10 +110,8 @@ export default function SimplifiedTransferFlow({
     }
   };
 
-  return (
-    <div className="w-full max-w-xl mx-auto">
-      <Card className="shadow-2xl border-0 bg-white overflow-hidden">
-        <div className="p-6 md:p-8 space-y-5">
+  const content = (
+    <div className="p-6 md:p-8 space-y-5">
           {/* Section 1: You send */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -364,20 +364,19 @@ export default function SimplifiedTransferFlow({
               'Send money'
             )}
           </Button>
-
-          {/* Trust indicators */}
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5 text-green-600" />
-              <span>Secured by Circle</span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center gap-1">
-              <Sparkles className="h-3.5 w-3.5 text-purple-600" />
-              <span>AI-optimized routing</span>
-            </div>
-          </div>
         </div>
+  );
+
+  // If in modal, return just the content without Card wrapper
+  if (inModal) {
+    return content;
+  }
+
+  // Otherwise, wrap in Card with container
+  return (
+    <div className="w-full max-w-xl mx-auto">
+      <Card className="shadow-2xl border-0 bg-white overflow-hidden">
+        {content}
       </Card>
 
       {/* Optional: Show transaction history link below */}
